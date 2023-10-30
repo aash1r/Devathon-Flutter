@@ -1,29 +1,28 @@
-import 'package:devathon_project/screens/home_screen.dart';
-import 'package:devathon_project/screens/signin_screen.dart';
+import 'package:devathon_project/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../components/my_button.dart';
 import '../components/my_textfield.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({
-    super.key,
-  });
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key, this.ontap});
+  final Function()? ontap;
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignInScreenState extends State<SignInScreen> {
   final emailcontroller = TextEditingController();
   final passcontroller = TextEditingController();
+  final cpasscontroller = TextEditingController();
 
-  void logIn() async {
+  void signIn() async {
     String email = emailcontroller.text.trim();
-    String password = passcontroller.text.trim();
+    String pass = passcontroller.text.trim();
+    String cpass = cpasscontroller.text.trim();
 
     showDialog(
         context: context,
@@ -32,20 +31,18 @@ class _LoginScreenState extends State<LoginScreen> {
               color: Colors.black,
             )));
 
+    if (pass != cpass) {
+      Navigator.pop(context);
+      var snackbar = const SnackBar(content: Text("Passwords do not match!"));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    }
+
     try {
       await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-
-      if (context.mounted) {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()));
-      }
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
+          .createUserWithEmailAndPassword(email: email, password: pass);
+      if (context.mounted) Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
-
       var snackbar = SnackBar(content: Text(e.code));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
     }
@@ -57,21 +54,18 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
           child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(8.0),
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(
-                  height: 30,
-                ),
                 SvgPicture.asset("assets/Login.svg"),
                 const SizedBox(
                   height: 20,
                 ),
                 Text(
-                  "Login",
+                  "Registration",
                   style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 29,
@@ -83,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   children: [
                     Text(
-                      "Username",
+                      "Your Name",
                       style: GoogleFonts.poppins(
                           color: Colors.black, fontSize: 12),
                     ),
@@ -93,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 5,
                 ),
                 MyTextfield(
-                  hintText: "Enter your username",
+                  hintText: "Email",
                   obsecureText: false,
                   controller: emailcontroller,
                   icon: const Icon(Icons.person),
@@ -114,16 +108,38 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 5,
                 ),
                 MyTextfield(
-                    hintText: "Enter your password",
-                    obsecureText: true,
-                    controller: passcontroller,
-                    icon: const Icon(Icons.remove_red_eye)),
+                  hintText: "Password",
+                  obsecureText: true,
+                  controller: passcontroller,
+                  icon: const Icon(Icons.remove_red_eye),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    Text(
+                      "Confirm Password",
+                      style: GoogleFonts.poppins(
+                          color: Colors.black, fontSize: 12),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                MyTextfield(
+                  hintText: "Confirm Password",
+                  obsecureText: true,
+                  controller: cpasscontroller,
+                  icon: const Icon(Icons.remove_red_eye),
+                ),
                 const SizedBox(
                   height: 40,
                 ),
                 MyButton(
-                  text: "Login",
-                  ontap: logIn,
+                  text: "Sign In",
+                  ontap: signIn,
                 ),
                 const SizedBox(
                   height: 10,
@@ -131,21 +147,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Not a member?"),
+                    const Text("Already have an account?"),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const SignInScreen()));
+                                builder: (_) => const LoginScreen()));
                       },
                       child: Text(
-                        " Sign In!",
+                        " Login!",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blueGrey.shade900),
                       ),
-                    )
+                    ),
                   ],
                 )
               ],
